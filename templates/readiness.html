@@ -1,19 +1,16 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Readiness Score</title>
-</head>
-<body>
-    <h1>Readiness for {{ company.name }}</h1>
-    <h2>Overall Score: {{ readiness_score }}%</h2>
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-3">Readiness for {{ company.name }}</h1>
+<div class="card p-4 mb-4" style="max-width: 400px;">
+    <h2 class="display-4">{{ readiness_score }}%</h2>
+    <p class="text-muted">Overall Readiness Score</p>
+</div>
 
-    <table border="1" cellpadding="5">
-        <tr>
-            <th>Topic</th>
-            <th>Weight</th>
-            <th>Solved / Total</th>
-            <th>Coverage %</th>
-        </tr>
+<table class="table table-bordered" style="max-width: 700px;">
+    <thead>
+        <tr><th>Topic</th><th>Weight</th><th>Solved / Total</th><th>Coverage %</th></tr>
+    </thead>
+    <tbody>
         {% for row in breakdown %}
         <tr>
             <td>{{ row.topic }}</td>
@@ -22,6 +19,6 @@
             <td>{{ row.coverage }}%</td>
         </tr>
         {% endfor %}
-    </table>
-</body>
-</html>
+    </tbody>
+</table>
+{% endblock %}
