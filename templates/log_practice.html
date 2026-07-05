@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Log Practice</title>
+</head>
+<body>
+    <h1>Log a Practice Question</h1>
+    <form method="POST">
+        <label>Topic:</label>
+        <select name="topic_id" required>
+            {% for topic in topics %}
+                <option value="{{ topic.id }}">{{ topic.name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>Question Name:</label>
+        <input type="text" name="question_name" placeholder="e.g. Longest Increasing Subsequence" required><br><br>
+
+        <label>Solved?</label>
+        <input type="checkbox" name="solved"><br><br>
+
+        <button type="submit">Log Practice</button>
+    </form>
+
+    <h2>Recent Practice Log</h2>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Date</th>
+            <th>Topic</th>
+            <th>Question</th>
+            <th>Solved</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.date_practiced }}</td>
+            <td>{{ log.topic.name }}</td>
+            <td>{{ log.question_name }}</td>
+            <td>{{ "Yes" if log.solved else "No" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

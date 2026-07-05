@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Company</title>
+</head>
+<body>
+    <h1>Add a Company</h1>
+    <form method="POST">
+        <label>Company Name:</label>
+        <input type="text" name="name" required><br><br>
+        <label>Sector:</label>
+        <input type="text" name="sector" placeholder="e.g. Fintech, Product"><br><br>
+        <button type="submit">Add Company</button>
+    </form>
+
+    <h2>Existing Companies</h2>
+    <ul>
+        {% for company in companies %}
+            <li>{{ company.name }} — {{ company.sector }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Practice Summary</title>
+</head>
+<body>
+    <h1>Practice Summary by Topic</h1>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Topic</th>
+            <th>Total Practiced</th>
+            <th>Solved</th>
+        </tr>
+        {% for row in summary_data %}
+        <tr>
+            <td>{{ row.topic }}</td>
+            <td>{{ row.total }}</td>
+            <td>{{ row.solved }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

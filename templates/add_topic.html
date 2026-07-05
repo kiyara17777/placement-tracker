@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Topic</title>
+</head>
+<body>
+    <h1>Add a Topic</h1>
+    <form method="POST">
+        <label>Topic Name:</label>
+        <input type="text" name="name" placeholder="e.g. DP, Graphs, SQL" required><br><br>
+        <button type="submit">Add Topic</button>
+    </form>
+
+    <h2>Existing Topics</h2>
+    <ul>
+        {% for topic in topics %}
+            <li>{{ topic.name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
