@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Readiness Score</title>
+</head>
+<body>
+    <h1>Readiness for {{ company.name }}</h1>
+    <h2>Overall Score: {{ readiness_score }}%</h2>
+
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>Topic</th>
+            <th>Weight</th>
+            <th>Solved / Total</th>
+            <th>Coverage %</th>
+        </tr>
+        {% for row in breakdown %}
+        <tr>
+            <td>{{ row.topic }}</td>
+            <td>{{ row.weight * 100 }}%</td>
+            <td>{{ row.solved }} / {{ row.total }}</td>
+            <td>{{ row.coverage }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

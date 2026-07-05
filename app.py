@@ -71,5 +71,32 @@ def summary():
         })
     return render_template('summary.html', summary_data=summary_data)
 
+@app.route('/readiness/<int:company_id>')
+def readiness(company_id):
+    company = Company.query.get_or_404(company_id)
+    weights = CompanyTopicWeight.query.filter_by(company_id=company_id).all()
+    
+    total_score = 0
+    breakdown = []
+    
+    for w in weights:
+        topic = w.topic
+        total = PracticeLog.query.filter_by(topic_id=topic.id).count()
+        solved = PracticeLog.query.filter_by(topic_id=topic.id, solved=True).count()
+        coverage = (solved / total) if total > 0 else 0
+        total_score += w.weight * coverage
+        
+        breakdown.append({
+            'topic': topic.name,
+            'weight': w.weight,
+            'coverage': round(coverage * 100, 1),
+            'solved': solved,
+            'total': total
+        })
+    
+    readiness_score = round(total_score * 100, 2)
+    return render_template('readiness.html', company=company, 
+                            readiness_score=readiness_score, breakdown=breakdown)
+
 if __name__ == '__main__':
     app.run(debug=True)
