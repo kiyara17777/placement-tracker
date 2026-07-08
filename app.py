@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from models import db, Company, Topic, CompanyTopicWeight, PracticeLog
 from datetime import date
+import math
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
@@ -8,9 +9,54 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
+def calculate_coverage_with_decay(topic_id):
+    """
+    Returns a coverage score (0 to 1) where more recent practice
+    counts more than older practice.
+    """
+    logs = PracticeLog.query.filter_by(topic_id=topic_id).all()
+
+    if not logs:
+        return 0
+
+    total_weight = 0
+    solved_weight = 0
+
+    for log in logs:
+        days_ago = (date.today() - log.date_practiced).days
+        recency_weight = math.exp(-days_ago / 30)  # decays over ~30 days
+
+        total_weight += recency_weight
+        if log.solved:
+            solved_weight += recency_weight
+
+    return solved_weight / total_weight if total_weight > 0 else 0
+
+def get_recommendation(breakdown):
+    """
+    Takes the already-built breakdown list and returns a plain-English
+    suggestion pointing at the single biggest score gap.
+    """
+    if not breakdown:
+        return "Add topic weights for this company to get a recommendation."
+
+    def gap_score(row):
+        return row['weight'] * (1 - row['coverage'] / 100)
+
+    weakest = max(breakdown, key=gap_score)
+    gap = gap_score(weakest) * 100
+
+    if gap < 2:
+        return "You're solidly covered across all weighted topics. Keep maintaining your practice streak."
+
+    return (f"Focus on {weakest['topic']} — it's weighted {weakest['weight']*100:.0f}% "
+            f"for this company and you're only at {weakest['coverage']:.0f}% coverage. "
+            f"This is your single biggest score gap (costing you ~{gap:.1f} points).")
+
 @app.route('/')
 def home():
-    return "Hello, Placement Tracker is running!"
+    companies = Company.query.all()
+    return render_template('dashboard.html', companies=companies)
 
 @app.route('/add-company', methods=['GET', 'POST'])
 def add_company():
@@ -83,7 +129,7 @@ def readiness(company_id):
         topic = w.topic
         total = PracticeLog.query.filter_by(topic_id=topic.id).count()
         solved = PracticeLog.query.filter_by(topic_id=topic.id, solved=True).count()
-        coverage = (solved / total) if total > 0 else 0
+        coverage = calculate_coverage_with_decay(topic.id)
         total_score += w.weight * coverage
         
         breakdown.append({
@@ -95,8 +141,12 @@ def readiness(company_id):
         })
     
     readiness_score = round(total_score * 100, 2)
-    return render_template('readiness.html', company=company, 
-                            readiness_score=readiness_score, breakdown=breakdown)
+    recommendation = get_recommendation(breakdown)
+
+    return render_template('readiness.html', company=company,
+                            readiness_score=readiness_score,
+                            breakdown=breakdown,
+                            recommendation=recommendation)
 
 if __name__ == '__main__':
     app.run(debug=True)

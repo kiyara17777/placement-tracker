@@ -1,18 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-4">Practice Summary by Topic</h1>
-<table class="table table-hover" style="max-width: 600px;">
-    <thead>
-        <tr><th>Topic</th><th>Total Practiced</th><th>Solved</th></tr>
-    </thead>
-    <tbody>
-        {% for row in summary_data %}
-        <tr>
-            <td>{{ row.topic }}</td>
-            <td>{{ row.total }}</td>
-            <td>{{ row.solved }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Practice Summary by Topic</h1>
+</div>
+
+<div class="row">
+    {% for row in summary_data %}
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    {{ row.topic }}
+                </div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                    {{ row.solved }} / {{ row.total }} solved
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Detailed Breakdown</h6>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr><th>Topic</th><th>Total Practiced</th><th>Solved</th></tr>
+            </thead>
+            <tbody>
+                {% for row in summary_data %}
+                <tr>
+                    <td>{{ row.topic }}</td>
+                    <td>{{ row.total }}</td>
+                    <td>{{ row.solved }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {% endblock %}

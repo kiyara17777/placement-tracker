@@ -16,9 +16,13 @@
 <h2>Existing Companies</h2>
 <ul class="list-group" style="max-width: 500px;">
     {% for company in companies %}
-        <li class="list-group-item d-flex justify-content-between">
-            <span>{{ company.name }}</span>
-            <span class="badge bg-secondary">{{ company.sector }}</span>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ company.name }}
+            {% if company.sector %}
+                <span class="badge badge-secondary badge-pill">{{ company.sector }}</span>
+            {% else %}
+                <span class="badge badge-light text-muted">No sector set</span>
+            {% endif %}
         </li>
     {% endfor %}
 </ul>

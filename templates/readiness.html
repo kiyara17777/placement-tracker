@@ -1,24 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-3">Readiness for {{ company.name }}</h1>
-<div class="card p-4 mb-4" style="max-width: 400px;">
-    <h2 class="display-4">{{ readiness_score }}%</h2>
-    <p class="text-muted">Overall Readiness Score</p>
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Readiness for {{ company.name }}</h1>
 </div>
 
-<table class="table table-bordered" style="max-width: 700px;">
-    <thead>
-        <tr><th>Topic</th><th>Weight</th><th>Solved / Total</th><th>Coverage %</th></tr>
-    </thead>
-    <tbody>
+<div class="row">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Overall Readiness
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ readiness_score }}%</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="alert alert-info shadow-sm" role="alert">
+    <i class="fas fa-lightbulb mr-2"></i>
+    <strong>Recommendation:</strong> {{ recommendation }}
+</div>
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Topic Breakdown</h6>
+    </div>
+    <div class="card-body">
         {% for row in breakdown %}
-        <tr>
-            <td>{{ row.topic }}</td>
-            <td>{{ row.weight * 100 }}%</td>
-            <td>{{ row.solved }} / {{ row.total }}</td>
-            <td>{{ row.coverage }}%</td>
-        </tr>
+        <h4 class="small font-weight-bold">{{ row.topic }} ({{ row.weight * 100 }}% weight)
+            <span class="float-right">{{ row.coverage }}%</span>
+        </h4>
+        <div class="progress mb-4">
+            <div class="progress-bar
+                {% if row.coverage >= 70 %}bg-success
+                {% elif row.coverage >= 40 %}bg-warning
+                {% else %}bg-danger{% endif %}"
+                role="progressbar" style="width: {{ row.coverage }}%">
+            </div>
+        </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+</div>
+
 {% endblock %}

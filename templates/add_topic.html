@@ -1,18 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-4">Add a Topic</h1>
-<form method="POST" class="card p-4 mb-4" style="max-width: 500px;">
-    <div class="mb-3">
-        <label class="form-label">Topic Name</label>
-        <input type="text" name="name" class="form-control" placeholder="e.g. DP, Graphs, SQL" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Add Topic</button>
-</form>
 
-<h2>Existing Topics</h2>
-<ul class="list-group" style="max-width: 500px;">
-    {% for topic in topics %}
-        <li class="list-group-item">{{ topic.name }}</li>
-    {% endfor %}
-</ul>
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Add a Topic</h1>
+</div>
+
+<div class="card shadow mb-4" style="max-width: 500px;">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">New Topic</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="form-group">
+                <label>Topic Name</label>
+                <input type="text" name="name" class="form-control" placeholder="e.g. DP, Graphs, SQL" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Topic</button>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow mb-4" style="max-width: 500px;">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Existing Topics</h6>
+    </div>
+    <div class="card-body">
+        <ul class="list-group">
+            {% for topic in topics %}
+                <li class="list-group-item">{{ topic.name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
 {% endblock %}
