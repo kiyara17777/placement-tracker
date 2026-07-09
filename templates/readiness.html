@@ -27,6 +27,24 @@
             </div>
         </div>
     </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Practice Streak
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ streak }} day{{ 's' if streak != 1 else '' }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-fire fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -56,5 +74,41 @@
         {% endfor %}
     </div>
 </div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Readiness Trend (Last 30 Days)</h6>
+    </div>
+    <div class="card-body">
+        <canvas id="trendChart"></canvas>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+const trendData = {{ trend | tojson }};
+const ctx = document.getElementById('trendChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: trendData.map(d => d.date),
+        datasets: [{
+            label: 'Readiness Score (%)',
+            data: trendData.map(d => d.score),
+            borderColor: '#4e73df',
+            backgroundColor: 'rgba(78, 115, 223, 0.05)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 2
+        }]
+    },
+    options: {
+        scales: {
+            y: { beginAtZero: true, max: 100 }
+        }
+    }
+});
+</script>
+{% endblock %}
 
 {% endblock %}

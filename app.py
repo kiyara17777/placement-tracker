@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from models import db, Company, Topic, CompanyTopicWeight, PracticeLog, User
-from datetime import date
+from datetime import date, timedelta
 from company_data import get_suggestion
 import math
 
@@ -241,8 +241,8 @@ def readiness(company_id):
     
     for w in weights:
         topic = w.topic
-        total = PracticeLog.query.filter_by(topic_id=topic.id).count()
-        solved = PracticeLog.query.filter_by(topic_id=topic.id, solved=True).count()
+        total = PracticeLog.query.filter_by(topic_id=topic.id, user_id=current_user.id).count()
+        solved = PracticeLog.query.filter_by(topic_id=topic.id, user_id=current_user.id, solved=True).count()
         coverage = calculate_coverage_with_decay(topic.id)
         total_score += w.weight * coverage
         
@@ -256,11 +256,15 @@ def readiness(company_id):
     
     readiness_score = round(total_score * 100, 2)
     recommendation = get_recommendation(breakdown)
-
-    return render_template('readiness.html', company=company,
-                            readiness_score=readiness_score,
+    streak = calculate_streak(current_user.id)  # NEW
+    trend = calculate_score_trend(company_id, current_user.id)  # NEW
+    
+    return render_template('readiness.html', company=company, 
+                            readiness_score=readiness_score, 
                             breakdown=breakdown,
-                            recommendation=recommendation)
+                            recommendation=recommendation,
+                            streak=streak,
+                            trend=trend)
 
 @app.route('/leaderboard/<int:company_id>')
 @login_required
@@ -299,6 +303,64 @@ def leaderboard(company_id):
     your_rank = next((i+1 for i, r in enumerate(rankings) if r['username'] == current_user.username), None)
     
     return render_template('leaderboard.html', company=company, rankings=rankings, your_rank=your_rank)
+
+def calculate_streak(user_id):
+    """Counts consecutive days (ending today or yesterday) with at least one practice log."""
+    logs = PracticeLog.query.filter_by(user_id=user_id).all()
+    if not logs:
+        return 0
+    
+    practiced_dates = set(log.date_practiced for log in logs)
+    
+    streak = 0
+    check_date = date.today()
+    
+    # allow streak to still count if today hasn't been logged yet, starting from yesterday
+    if check_date not in practiced_dates:
+        check_date -= timedelta(days=1)
+    
+    while check_date in practiced_dates:
+        streak += 1
+        check_date -= timedelta(days=1)
+    
+    return streak
+
+def calculate_score_trend(company_id, user_id, days=30):
+    """Returns a list of {date, score} for the last N days, using historical decay."""
+    weights = CompanyTopicWeight.query.filter_by(company_id=company_id).all()
+    trend = []
+    
+    for i in range(days, -1, -1):
+        as_of_date = date.today() - timedelta(days=i)
+        total_score = 0
+        
+        for w in weights:
+            logs = PracticeLog.query.filter(
+                PracticeLog.topic_id == w.topic_id,
+                PracticeLog.user_id == user_id,
+                PracticeLog.date_practiced <= as_of_date
+            ).all()
+            
+            if logs:
+                total_weight = 0
+                solved_weight = 0
+                for log in logs:
+                    days_ago = (as_of_date - log.date_practiced).days
+                    recency_weight = math.exp(-days_ago / 30)
+                    difficulty_multiplier = DIFFICULTY_WEIGHTS.get(log.difficulty, 1.0)
+                    combined = recency_weight * difficulty_multiplier
+                    total_weight += combined
+                    if log.solved:
+                        solved_weight += combined
+                coverage = solved_weight / total_weight if total_weight > 0 else 0
+            else:
+                coverage = 0
+            
+            total_score += w.weight * coverage
+        
+        trend.append({'date': as_of_date.strftime('%m-%d'), 'score': round(total_score * 100, 1)})
+    
+    return trend
 
 if __name__ == '__main__':
     app.run(debug=True)
