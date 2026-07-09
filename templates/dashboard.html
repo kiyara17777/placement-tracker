@@ -18,6 +18,12 @@
                     <a href="{{ url_for('readiness', company_id=company.id) }}" class="btn btn-sm btn-outline-primary mt-2">
                         View Readiness
                     </a>
+                    <a href="{{ url_for('set_weights', company_id=company.id) }}" class="btn btn-sm btn-outline-secondary mt-2">
+                        Edit Weights
+                    </a>
+                    <a href="{{ url_for('leaderboard', company_id=company.id) }}" class="btn btn-sm btn-outline-warning mt-2">
+                        Leaderboard
+                    </a>
                 </div>
             </div>
         </div>

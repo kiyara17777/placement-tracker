@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Set Topic Weights — {{ company.name }}</h1>
+</div>
+
+<div class="card shadow mb-4" style="max-width: 600px;">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Weight per Topic (%)</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            {% for topic in topics %}
+            <div class="form-group row">
+                <label class="col-sm-4 col-form-label">{{ topic.name }}</label>
+                <div class="col-sm-8">
+                    <input type="number" name="weight_{{ topic.id }}" class="form-control" 
+                           min="0" max="100" step="1"
+                           value="{{ (existing_weights.get(topic.id, 0) * 100) | round(0) }}">
+                </div>
+            </div>
+            {% endfor %}
+            <small class="text-muted">Weights don't need to sum to exactly 100 — leave a topic at 0 if not relevant.</small>
+            <button type="submit" class="btn btn-primary mt-3">Save Weights</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

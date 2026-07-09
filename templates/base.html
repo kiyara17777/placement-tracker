@@ -79,9 +79,12 @@
 
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item">
-                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">Your Prep Dashboard</span>
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ current_user.username }}</span>
                         </li>
-                    </ul>
+                        <li class="nav-item">
+                             <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('logout') }}">Logout</a>
+                        </li>
+                    </ul>               
                 </nav>
                 <!-- End of Topbar -->
 
