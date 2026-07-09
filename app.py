@@ -4,11 +4,15 @@ from models import db, Company, Topic, CompanyTopicWeight, PracticeLog, User
 from datetime import date, timedelta
 from company_data import get_suggestion
 import math
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement.db'
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///placement.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'change-this-to-something-random-later'  # needed for sessions/flash messages
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key-change-in-production')
 
 db.init_app(app)
 
@@ -361,6 +365,11 @@ def calculate_score_trend(company_id, user_id, days=30):
         trend.append({'date': as_of_date.strftime('%m-%d'), 'score': round(total_score * 100, 1)})
     
     return trend
+
+@app.route('/init-db-once-xyz123')
+def init_db():
+    db.create_all()
+    return "Database initialized!"
 
 if __name__ == '__main__':
     app.run(debug=True)
