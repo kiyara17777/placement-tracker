@@ -366,10 +366,5 @@ def calculate_score_trend(company_id, user_id, days=30):
     
     return trend
 
-@app.route('/init-db-once-xyz123')
-def init_db():
-    db.create_all()
-    return "Database initialized!"
-
 if __name__ == '__main__':
     app.run(debug=True)
