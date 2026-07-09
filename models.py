@@ -51,6 +51,7 @@ class PracticeLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     topic_id = db.Column(db.Integer, db.ForeignKey('topic.id'), nullable=False)
     question_name = db.Column(db.String(200), nullable=False)
+    difficulty = db.Column(db.String(10), default='Medium')  # NEW: Easy / Medium / Hard
     solved = db.Column(db.Boolean, default=False)
     date_practiced = db.Column(db.Date, default=db.func.current_date())
 

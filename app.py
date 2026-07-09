@@ -66,12 +66,10 @@ def logout():
     return redirect(url_for('login'))
 
 
+DIFFICULTY_WEIGHTS = {'Easy': 1.0, 'Medium': 1.25, 'Hard': 1.5}
+
 def calculate_coverage_with_decay(topic_id):
-    """
-    Returns a coverage score (0 to 1) where more recent practice
-    counts more than older practice.
-    """
-    logs = PracticeLog.query.filter_by(topic_id=topic_id, user_id=current_user.id).all()  # <-- filtered
+    logs = PracticeLog.query.filter_by(topic_id=topic_id, user_id=current_user.id).all()
     
     if not logs:
         return 0
@@ -82,9 +80,12 @@ def calculate_coverage_with_decay(topic_id):
     for log in logs:
         days_ago = (date.today() - log.date_practiced).days
         recency_weight = math.exp(-days_ago / 30)
-        total_weight += recency_weight
+        difficulty_multiplier = DIFFICULTY_WEIGHTS.get(log.difficulty, 1.0)
+        combined_weight = recency_weight * difficulty_multiplier
+        
+        total_weight += combined_weight
         if log.solved:
-            solved_weight += recency_weight
+            solved_weight += combined_weight
     
     return solved_weight / total_weight if total_weight > 0 else 0
 
@@ -176,11 +177,13 @@ def log_practice():
     if request.method == 'POST':
         topic_id = request.form['topic_id']
         question_name = request.form['question_name']
+        difficulty = request.form.get('difficulty', 'Medium')  # NEW
         solved = 'solved' in request.form
         new_log = PracticeLog(
-            user_id=current_user.id,        # <-- NEW
+            user_id=current_user.id,
             topic_id=topic_id,
             question_name=question_name,
+            difficulty=difficulty,  # NEW
             solved=solved,
             date_practiced=date.today()
         )
@@ -189,7 +192,7 @@ def log_practice():
         return redirect(url_for('log_practice'))
     
     topics = Topic.query.all()
-    logs = PracticeLog.query.filter_by(user_id=current_user.id).order_by(PracticeLog.date_practiced.desc()).all()  # <-- filtered
+    logs = PracticeLog.query.filter_by(user_id=current_user.id).order_by(PracticeLog.date_practiced.desc()).all()
     return render_template('log_practice.html', topics=topics, logs=logs)
 
 @app.route('/set-weights/<int:company_id>', methods=['GET', 'POST'])
