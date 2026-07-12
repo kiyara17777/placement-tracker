@@ -5,6 +5,7 @@ from datetime import date, timedelta
 from company_data import get_suggestion
 import math
 import os
+from flask_caching import Cache
 
 app = Flask(__name__)
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///placement.db')
@@ -15,6 +16,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-fallback-key-change-in-production')
 
 db.init_app(app)
+
+app.config['CACHE_TYPE'] = 'RedisCache'
+app.config['CACHE_REDIS_URL'] = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes
+
+cache = Cache(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -120,8 +127,6 @@ def home():
     companies = Company.query.all()
     return render_template('dashboard.html', companies=companies)
 
-from company_data import get_suggestion
-
 @app.route('/add-company', methods=['GET', 'POST'])
 @login_required
 def add_company():
@@ -181,18 +186,24 @@ def log_practice():
     if request.method == 'POST':
         topic_id = request.form['topic_id']
         question_name = request.form['question_name']
-        difficulty = request.form.get('difficulty', 'Medium')  # NEW
+        difficulty = request.form.get('difficulty', 'Medium')
         solved = 'solved' in request.form
         new_log = PracticeLog(
             user_id=current_user.id,
             topic_id=topic_id,
             question_name=question_name,
-            difficulty=difficulty,  # NEW
+            difficulty=difficulty,
             solved=solved,
             date_practiced=date.today()
         )
         db.session.add(new_log)
         db.session.commit()
+
+        # Invalidate leaderboard caches since this practice log could change rankings
+        companies = Company.query.all()
+        for c in companies:
+            cache.delete(f'leaderboard_{c.id}')
+
         return redirect(url_for('log_practice'))
     
     topics = Topic.query.all()
@@ -270,43 +281,59 @@ def readiness(company_id):
                             streak=streak,
                             trend=trend)
 
+def calculate_coverage_for_user(topic_id, user_id):
+    logs = PracticeLog.query.filter_by(topic_id=topic_id, user_id=user_id).all()
+    if not logs:
+        return 0
+    total_weight = 0
+    solved_weight = 0
+    for log in logs:
+        days_ago = (date.today() - log.date_practiced).days
+        recency_weight = math.exp(-days_ago / 30)
+        difficulty_multiplier = DIFFICULTY_WEIGHTS.get(log.difficulty, 1.0)
+        combined = recency_weight * difficulty_multiplier
+        total_weight += combined
+        if log.solved:
+            solved_weight += combined
+    return solved_weight / total_weight if total_weight > 0 else 0
+
+# Keep the old function as a thin wrapper so existing calls don't break
+def calculate_coverage_with_decay(topic_id):
+    return calculate_coverage_for_user(topic_id, current_user.id)
+
 @app.route('/leaderboard/<int:company_id>')
 @login_required
 def leaderboard(company_id):
-    company = Company.query.get_or_404(company_id)
-    weights = CompanyTopicWeight.query.filter_by(company_id=company_id).all()
+    cache_key = f'leaderboard_{company_id}'
+    cached_rankings = cache.get(cache_key)
     
-    all_users = User.query.all()
-    rankings = []
-    
-    for user in all_users:
-        total_score = 0
-        for w in weights:
-            logs = PracticeLog.query.filter_by(topic_id=w.topic_id, user_id=user.id).all()
-            if logs:
-                total_weight = 0
-                solved_weight = 0
-                for log in logs:
-                    days_ago = (date.today() - log.date_practiced).days
-                    recency_weight = math.exp(-days_ago / 30)
-                    total_weight += recency_weight
-                    if log.solved:
-                        solved_weight += recency_weight
-                coverage = solved_weight / total_weight if total_weight > 0 else 0
-            else:
-                coverage = 0
-            total_score += w.weight * coverage
+    if cached_rankings is None:
+        if cached_rankings is None:
+            company = Company.query.get_or_404(company_id)
+            weights = CompanyTopicWeight.query.filter_by(company_id=company_id).all()
+            all_users = User.query.all()
+            rankings = []
         
-        score = round(total_score * 100, 2)
-        if score > 0:  # only show users who've logged some relevant practice
-            rankings.append({'username': user.username, 'score': score})
+            for user in all_users:
+                total_score = 0
+                for w in weights:
+                    logs = PracticeLog.query.filter_by(topic_id=w.topic_id, user_id=user.id).all()
+                    # ... same coverage calculation as before ...
+                    coverage = calculate_coverage_for_user(w.topic_id, user.id)  # see note below
+                    total_score += w.weight * coverage
+            
+                score = round(total_score * 100, 2)
+                if score > 0:
+                    rankings.append({'username': user.username, 'score': score})
+        
+            rankings.sort(key=lambda x: x['score'], reverse=True)
+            cache.set(cache_key, rankings, timeout=300)
+            cached_rankings = rankings
+    else:
+        company = Company.query.get_or_404(company_id)
     
-    rankings.sort(key=lambda x: x['score'], reverse=True)
-    
-    # find current user's rank even if not in top list
-    your_rank = next((i+1 for i, r in enumerate(rankings) if r['username'] == current_user.username), None)
-    
-    return render_template('leaderboard.html', company=company, rankings=rankings, your_rank=your_rank)
+    your_rank = next((i+1 for i, r in enumerate(cached_rankings) if r['username'] == current_user.username), None)
+    return render_template('leaderboard.html', company=company, rankings=cached_rankings, your_rank=your_rank)
 
 def calculate_streak(user_id):
     """Counts consecutive days (ending today or yesterday) with at least one practice log."""
