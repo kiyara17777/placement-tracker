@@ -1,38 +1,59 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+<div class="page-head">
+    <div>
+        <div class="eyebrow">Overview</div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">Your readiness across every company you're tracking.</p>
+    </div>
 </div>
 
-<div class="row">
-    {% if companies %}
-        {% for company in companies %}
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                        {{ company.sector or "General" }}
-                    </div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ company.name }}</div>
-                    <a href="{{ url_for('readiness', company_id=company.id) }}" class="btn btn-sm btn-outline-primary mt-2">
-                        View Readiness
-                    </a>
-                    <a href="{{ url_for('set_weights', company_id=company.id) }}" class="btn btn-sm btn-outline-secondary mt-2">
-                        Edit Weights
-                    </a>
-                    <a href="{{ url_for('leaderboard', company_id=company.id) }}" class="btn btn-sm btn-outline-warning mt-2">
-                        Leaderboard
-                    </a>
-                </div>
+{% if company_data %}
+    {% for item in company_data %}
+    {% set company = item.company %}
+    {% set score = item.score %}
+    {% set circumference = 150.8 %}
+    {% set offset = circumference - (circumference * score / 100) %}
+    {% set gauge_color = 'var(--signal)' if score >= 70 else ('var(--amber)' if score >= 40 else 'var(--coral)') %}
+    {% set status_label = 'Ready' if score >= 70 else ('In progress' if score >= 40 else 'Needs work') %}
+    {% set status_class = 'status-ready' if score >= 70 else 'status-progress' %}
+
+    <div class="ticket">
+        <div class="ticket-main">
+            <span class="sector-tag">{{ company.sector or "General" }}</span>
+            <h3 class="company-name">{{ company.name }}</h3>
+            <div class="btn-row">
+                <a href="{{ url_for('readiness', company_id=company.id) }}" class="btn btn-primary">View Readiness</a>
+                <a href="{{ url_for('set_weights', company_id=company.id) }}" class="btn">Edit Weights</a>
+                <a href="{{ url_for('leaderboard', company_id=company.id) }}" class="btn btn-amber">Leaderboard</a>
             </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <div class="col-12">
-            <p class="text-muted">No companies added yet. <a href="{{ url_for('add_company') }}">Add one to get started.</a></p>
+        <div class="ticket-perf"></div>
+        <div class="ticket-stub">
+            {% if item.has_weights %}
+            <div class="gauge">
+                <svg viewBox="0 0 58 58">
+                    <circle class="track" cx="29" cy="29" r="24"/>
+                    <circle class="fill" cx="29" cy="29" r="24"
+                        stroke="{{ gauge_color }}"
+                        stroke-dasharray="{{ circumference }}" stroke-dashoffset="{{ offset }}"/>
+                </svg>
+                <div class="gauge-label">{{ score }}%</div>
+            </div>
+            <span class="stub-status {{ status_class }}">{{ status_label }}</span>
+            {% else %}
+            <div class="gauge">
+                <svg viewBox="0 0 58 58">
+                    <circle class="track" cx="29" cy="29" r="24"/>
+                </svg>
+                <div class="gauge-label">--</div>
+            </div>
+            <span class="stub-status" style="color:var(--muted-2);">No weights set</span>
+            {% endif %}
         </div>
-    {% endif %}
-</div>
-
+    </div>
+    {% endfor %}
+{% else %}
+    <p class="page-sub">No companies added yet. <a href="{{ url_for('add_company') }}">Add one to get started.</a></p>
+{% endif %}
 {% endblock %}

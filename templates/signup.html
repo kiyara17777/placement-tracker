@@ -1,25 +1,20 @@
 {% extends "base_auth.html" %}
 {% block content %}
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow p-4" style="width: 400px;">
-        <h3 class="text-center mb-4">Sign Up</h3>
+<div class="login-wrap">
+    <div class="login-card">
+        <div class="login-brand">
+            <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div><div class="login-title">Create account</div><div class="login-sub">PLACEMENT READINESS TRACKER</div></div>
+        </div>
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-danger">{{ messages[0] }}</div>
-            {% endif %}
+            {% if messages %}<div class="flash">{{ messages[0] }}</div>{% endif %}
         {% endwith %}
         <form method="POST">
-            <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+            <div class="field"><label>Username</label><input type="text" name="username" required></div>
+            <div class="field"><label>Password</label><input type="password" name="password" required></div>
+            <button type="submit" class="btn btn-primary btn-full">Sign up</button>
         </form>
-        <p class="text-center mt-3">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        <div class="login-foot">Already have an account? <a href="{{ url_for('login') }}">Log in</a></div>
     </div>
 </div>
 {% endblock %}

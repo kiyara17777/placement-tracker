@@ -1,79 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Log a Practice Question</h1>
+<div class="page-head">
+    <div><div class="eyebrow">Practice</div><h1 class="page-title">Log a Practice Question</h1></div>
 </div>
 
-<div class="card shadow mb-4" style="max-width: 500px;">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">New Entry</h6>
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="form-group">
-                <label>Topic</label>
-                <select name="topic_id" class="form-control" required>
-                    {% for topic in topics %}
-                        <option value="{{ topic.id }}">{{ topic.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Question Name</label>
-                <input type="text" name="question_name" class="form-control" placeholder="e.g. Longest Increasing Subsequence" required>
-            </div>
-            <div class="form-group">
-                <label>Difficulty</label>
-                <select name="difficulty" class="form-control">
-                    <option value="Easy">Easy</option>
-                    <option value="Medium" selected>Medium</option>
-                    <option value="Hard">Hard</option>
-                 </select>
-            </div>
-            <div class="form-group form-check">
-                <input type="checkbox" name="solved" class="form-check-input" id="solvedCheck">
-                <label class="form-check-label" for="solvedCheck">Solved?</label>
-            </div>
-            <button type="submit" class="btn btn-primary">Log Practice</button>
-        </form>
-    </div>
-</div>
-
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Recent Practice Log</h6>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Topic</th>
-                        <th>Question</th>
-                        <th>Solved</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr>
-                        <td>{{ log.date_practiced }}</td>
-                        <td>{{ log.topic.name }}</td>
-                        <td>{{ log.question_name }}</td>
-                        <td>
-                            {% if log.solved %}
-                                <span class="badge badge-success">Yes</span>
-                            {% else %}
-                                <span class="badge badge-secondary">No</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="card form-panel">
+    <form method="POST">
+        <div class="field">
+            <label>Topic</label>
+            <select name="topic_id" required>
+                {% for topic in topics %}
+                    <option value="{{ topic.id }}">{{ topic.name }}</option>
+                {% endfor %}
+            </select>
         </div>
-    </div>
+        <div class="field"><label>Question Name</label><input type="text" name="question_name" placeholder="e.g. Longest Increasing Subsequence" required></div>
+        <div class="field">
+            <label>Difficulty</label>
+            <select name="difficulty">
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+            </select>
+        </div>
+        <div class="checkbox-field">
+            <input type="checkbox" name="solved" id="solved">
+            <label for="solved">Solved?</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Log Practice</button>
+    </form>
 </div>
 
+<div style="margin-top:30px;">
+    <h3 class="section-title">Recent Practice Log</h3>
+    <table>
+        <thead><tr><th>Date</th><th>Topic</th><th>Question</th><th>Difficulty</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ log.date_practiced.strftime('%b %d') }}</td>
+                <td>{{ log.topic.name }}</td>
+                <td>{{ log.question_name }}</td>
+                <td class="diff diff-{{ log.difficulty | lower }}">{{ log.difficulty }}</td>
+                <td>
+                    {% if log.solved %}
+                        <span class="pill pill-solved">Solved</span>
+                    {% else %}
+                        <span class="pill pill-unsolved">Attempted</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

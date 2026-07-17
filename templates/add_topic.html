@@ -1,36 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Add a Topic</h1>
+<div class="page-head">
+    <div><div class="eyebrow">Manage</div><h1 class="page-title">Add a Topic</h1></div>
 </div>
 
-<div class="card shadow mb-4" style="max-width: 500px;">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">New Topic</h6>
-    </div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="form-group">
-                <label>Topic Name</label>
-                <input type="text" name="name" class="form-control" placeholder="e.g. DP, Graphs, SQL" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Topic</button>
-        </form>
-    </div>
+<div class="card form-panel">
+    <form method="POST">
+        <div class="field"><label>Topic Name</label><input type="text" name="name" placeholder="e.g. DP, Graphs, SQL" required></div>
+        <button type="submit" class="btn btn-primary btn-full">Add Topic</button>
+    </form>
 </div>
 
-<div class="card shadow mb-4" style="max-width: 500px;">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Existing Topics</h6>
-    </div>
-    <div class="card-body">
-        <ul class="list-group">
-            {% for topic in topics %}
-                <li class="list-group-item">{{ topic.name }}</li>
-            {% endfor %}
-        </ul>
+<div style="margin-top:30px;">
+    <h3 class="section-title">Existing Topics</h3>
+    <div class="topic-grid">
+        {% for topic in topics %}
+        <div class="topic-chip">{{ topic.name }}</div>
+        {% endfor %}
     </div>
 </div>
-
 {% endblock %}

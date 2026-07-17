@@ -1,90 +1,58 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Readiness for {{ company.name }}</h1>
+{% set gauge_color = 'var(--signal)' if readiness_score >= 70 else ('var(--amber)' if readiness_score >= 40 else 'var(--coral)') %}
+{% set circumference = 150.8 %}
+{% set offset = circumference - (circumference * readiness_score / 100) %}
+
+<div class="page-head">
+    <div>
+        <div class="eyebrow">{{ company.name }}</div>
+        <h1 class="page-title">Readiness for {{ company.name }}</h1>
+    </div>
+    <a href="{{ url_for('leaderboard', company_id=company.id) }}" class="btn btn-amber">🏆 View Leaderboard</a>
 </div>
 
-<a href="{{ url_for('leaderboard', company_id=company.id) }}" class="btn btn-sm btn-outline-warning mb-3">
-    <i class="fas fa-trophy mr-1"></i> View Leaderboard
-</a>
+<div class="stat-row">
+    <div class="stat-card">
+        <div><div class="stat-label">Overall Readiness</div><div class="stat-value">{{ readiness_score }}%</div></div>
+        <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l6-6 4 4 8-8"/></svg></div>
+    </div>
+    <div class="stat-card streak">
+        <div><div class="stat-label">Practice Streak</div><div class="stat-value">{{ streak }} day{{ 's' if streak != 1 else '' }}</div></div>
+        <div class="stat-icon" style="color:var(--amber);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2c1 4-3 5-3 9a3 3 0 006 0c0-1-1-2-1-3 2 1 3 3 3 5a5 5 0 01-10 0c0-5 4-6 5-11z"/></svg></div>
+    </div>
+</div>
 
-<div class="row">
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Overall Readiness
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ readiness_score }}%</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
+<div class="recommendation">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+    <div><b>Recommendation:</b> {{ recommendation }}</div>
+</div>
+
+<div class="card">
+    <h3 class="section-title">Topic Breakdown</h3>
+    {% for row in breakdown %}
+    <div class="breakdown-row">
+        <div class="breakdown-top">
+            <span class="name">{{ row.topic }} <span class="weight">({{ row.weight * 100 }}% weight)</span></span>
+            <span class="pct">{{ row.coverage }}%</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" style="width:{{ row.coverage }}%; background:{{ 'var(--signal)' if row.coverage >= 70 else ('var(--amber)' if row.coverage >= 40 else 'var(--coral)') }};"></div>
         </div>
     </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Practice Streak
-                        </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ streak }} day{{ 's' if streak != 1 else '' }}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-fire fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
 </div>
 
-
-<div class="alert alert-info shadow-sm" role="alert">
-    <i class="fas fa-lightbulb mr-2"></i>
-    <strong>Recommendation:</strong> {{ recommendation }}
+<div class="card">
+    <h3 class="section-title">Readiness Trend (Last 30 Days)</h3>
+    <canvas id="trendChart" style="max-height:220px;"></canvas>
 </div>
 
-
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Topic Breakdown</h6>
-    </div>
-    <div class="card-body">
-        {% for row in breakdown %}
-        <h4 class="small font-weight-bold">{{ row.topic }} ({{ row.weight * 100 }}% weight)
-            <span class="float-right">{{ row.coverage }}%</span>
-        </h4>
-        <div class="progress mb-4">
-            <div class="progress-bar
-                {% if row.coverage >= 70 %}bg-success
-                {% elif row.coverage >= 40 %}bg-warning
-                {% else %}bg-danger{% endif %}"
-                role="progressbar" style="width: {{ row.coverage }}%">
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Readiness Trend (Last 30 Days)</h6>
-    </div>
-    <div class="card-body">
-        <canvas id="trendChart"></canvas>
-    </div>
-</div>
+{% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const trendData = {{ trend | tojson }};
 const ctx = document.getElementById('trendChart').getContext('2d');
@@ -95,20 +63,14 @@ new Chart(ctx, {
         datasets: [{
             label: 'Readiness Score (%)',
             data: trendData.map(d => d.score),
-            borderColor: '#4e73df',
-            backgroundColor: 'rgba(78, 115, 223, 0.05)',
+            borderColor: '#2F5DFF',
+            backgroundColor: 'rgba(47, 93, 255, 0.05)',
             fill: true,
             tension: 0.3,
             pointRadius: 2
         }]
     },
-    options: {
-        scales: {
-            y: { beginAtZero: true, max: 100 }
-        }
-    }
+    options: { scales: { y: { beginAtZero: true, max: 100 } } }
 });
 </script>
-{% endblock %}
-
 {% endblock %}

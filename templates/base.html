@@ -2,121 +2,68 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Placement Readiness Tracker</title>
-
-    <link href="{{ url_for('static', filename='vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/sb-admin-2.min.css') }}" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/theme.css') }}" rel="stylesheet">
 </head>
+<body>
 
-<body id="page-top">
-    <div id="wrapper">
-
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ url_for('home') }}">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
-                <div class="sidebar-brand-text mx-3">Placement Tracker</div>
-            </a>
-
-            <hr class="sidebar-divider my-0">
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('home') }}">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
-
-            <hr class="sidebar-divider">
-            <div class="sidebar-heading">Manage</div>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('add_company') }}">
-                    <i class="fas fa-fw fa-building"></i>
-                    <span>Companies</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('add_topic') }}">
-                    <i class="fas fa-fw fa-list"></i>
-                    <span>Topics</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('log_practice') }}">
-                    <i class="fas fa-fw fa-pencil-alt"></i>
-                    <span>Log Practice</span></a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('summary') }}">
-                    <i class="fas fa-fw fa-table"></i>
-                    <span>Summary</span></a>
-            </li>
-
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+<div class="shell">
+    <div class="sidebar">
+        <a class="brand" href="{{ url_for('home') }}">
+            <div class="brand-mark">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
+            <div class="brand-text">Placement Tracker<span>READINESS OS</span></div>
+        </a>
 
-        </ul>
-        <!-- End of Sidebar -->
+        <a class="nav-item {% if request.endpoint == 'home' %}active{% endif %}" href="{{ url_for('home') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 13h6V4H4v9zM4 20h6v-5H4v5zM14 20h6V11h-6v9zM14 4v5h6V4h-6z"/></svg>
+            <span>Dashboard</span>
+        </a>
 
-        <div id="content-wrapper" class="d-flex flex-column">
-            <div id="content">
+        <div class="nav-section">Manage</div>
 
-                <!-- Topbar -->
-                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars"></i>
-                    </button>
-
-                    <ul class="navbar-nav ml-auto">
-                        <li class="nav-item">
-                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ current_user.username }}</span>
-                        </li>
-                        <li class="nav-item">
-                             <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('logout') }}">Logout</a>
-                        </li>
-                    </ul>               
-                </nav>
-                <!-- End of Topbar -->
-
-                <!-- Begin Page Content -->
-                <div class="container-fluid">
-                    {% block content %}{% endblock %}
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Placement Readiness Tracker</span>
-                    </div>
-                </div>
-            </footer>
-        </div>
+        <a class="nav-item {% if request.endpoint == 'add_company' %}active{% endif %}" href="{{ url_for('add_company') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V7l8-4 8 4v14h-6v-6H10v6H4z"/></svg>
+            <span>Companies</span>
+        </a>
+        <a class="nav-item {% if request.endpoint == 'add_topic' %}active{% endif %}" href="{{ url_for('add_topic') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            <span>Topics</span>
+        </a>
+        <a class="nav-item {% if request.endpoint == 'log_practice' %}active{% endif %}" href="{{ url_for('log_practice') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span>Log Practice</span>
+        </a>
+        <a class="nav-item {% if request.endpoint == 'summary' %}active{% endif %}" href="{{ url_for('summary') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5m6 14V9m6 10v-6m6 6V4"/></svg>
+            <span>Summary</span>
+        </a>
     </div>
 
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
+    <div class="main">
+        <div class="topbar">
+            <div></div>
+            <div class="topbar-user">
+                <span class="username">Signed in as <b>{{ current_user.username }}</b></span>
+                <a class="btn-logout" href="{{ url_for('logout') }}">Logout</a>
+            </div>
+        </div>
+        <div class="content">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash">{{ messages[0] }}</div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </div>
+        <div class="footer-note">PLACEMENT READINESS TRACKER</div>
+    </div>
+</div>
 
-    <script src="{{ url_for('static', filename='vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/sb-admin-2.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='vendor/chart.js/Chart.min.js') }}"></script>
-
-    {% block scripts %}{% endblock %}
+{% block scripts %}{% endblock %}
 </body>
 </html>

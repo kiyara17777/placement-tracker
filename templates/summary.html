@@ -1,47 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Practice Summary by Topic</h1>
+<div class="page-head">
+    <div><div class="eyebrow">Progress</div><h1 class="page-title">Practice Summary by Topic</h1></div>
 </div>
 
-<div class="row">
+<div class="summary-grid">
     {% for row in summary_data %}
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                    {{ row.topic }}
-                </div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">
-                    {{ row.solved }} / {{ row.total }} solved
-                </div>
-            </div>
+    {% set pct = (row.solved / row.total * 100) if row.total > 0 else 0 %}
+    {% set border_color = 'var(--signal)' if pct >= 70 else ('var(--amber)' if pct >= 40 else 'var(--border)') %}
+    <div class="card summary-card" style="border-left-color:{{ border_color }};">
+        <div class="summary-top">
+            <span class="summary-topic">{{ row.topic }}</span>
+            <span class="summary-frac">{{ row.solved }} / {{ row.total }}</span>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" style="width:{{ pct }}%; {% if pct < 70 and pct >= 40 %}background:var(--amber);{% endif %}"></div>
         </div>
     </div>
     {% endfor %}
 </div>
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Detailed Breakdown</h6>
-    </div>
-    <div class="card-body">
-        <table class="table table-hover">
-            <thead>
-                <tr><th>Topic</th><th>Total Practiced</th><th>Solved</th></tr>
-            </thead>
-            <tbody>
-                {% for row in summary_data %}
-                <tr>
-                    <td>{{ row.topic }}</td>
-                    <td>{{ row.total }}</td>
-                    <td>{{ row.solved }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="card" style="margin-top:8px;">
+    <h3 class="section-title">Detailed Breakdown</h3>
+    <table>
+        <thead><tr><th>Topic</th><th>Total Practiced</th><th>Solved</th></tr></thead>
+        <tbody>
+            {% for row in summary_data %}
+            <tr><td>{{ row.topic }}</td><td>{{ row.total }}</td><td>{{ row.solved }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
 {% endblock %}

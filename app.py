@@ -125,7 +125,24 @@ def get_recommendation(breakdown):
 @login_required
 def home():
     companies = Company.query.all()
-    return render_template('dashboard.html', companies=companies)
+    company_data = []
+
+    for company in companies:
+        weights = CompanyTopicWeight.query.filter_by(company_id=company.id).all()
+        total_score = 0
+
+        for w in weights:
+            coverage = calculate_coverage_for_user(w.topic_id, current_user.id)
+            total_score += w.weight * coverage
+
+        score = round(total_score * 100, 1) if weights else 0
+        company_data.append({
+            'company': company,
+            'score': score,
+            'has_weights': len(weights) > 0
+        })
+
+    return render_template('dashboard.html', company_data=company_data)
 
 @app.route('/add-company', methods=['GET', 'POST'])
 @login_required
