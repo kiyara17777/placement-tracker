@@ -410,5 +410,40 @@ def calculate_score_trend(company_id, user_id, days=30):
     
     return trend
 
+def seed_curated_companies():
+    """Ensures all curated companies exist in the DB with their topic weights, without user action."""
+    from company_data import get_all_curated_companies, get_suggestion
+    
+    for name, sector in get_all_curated_companies():
+        company = Company.query.filter_by(name=name).first()
+        if not company:
+            company = Company(name=name, sector=sector)
+            db.session.add(company)
+            db.session.commit()
+        
+        suggestion = get_suggestion(name)
+        if suggestion:
+            for topic_name, weight in suggestion['weights'].items():
+                topic = Topic.query.filter_by(name=topic_name).first()
+                if not topic:
+                    topic = Topic(name=topic_name)
+                    db.session.add(topic)
+                    db.session.commit()
+                
+                existing = CompanyTopicWeight.query.filter_by(
+                    company_id=company.id, topic_id=topic.id
+                ).first()
+                if not existing:
+                    w = CompanyTopicWeight(company_id=company.id, topic_id=topic.id, weight=weight)
+                    db.session.add(w)
+    db.session.commit()
+
+
+@app.route('/init-db-once-xyz123')
+def init_db():
+    db.create_all()
+    seed_curated_companies()
+    return "Database initialized and companies seeded!"
+
 if __name__ == '__main__':
     app.run(debug=True)
